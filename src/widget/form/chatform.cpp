@@ -293,8 +293,7 @@ void ChatForm::onAvInvite(uint32_t FriendId, bool video)
 
     Widget::getInstance()->newFriendMessageAlert(FriendId, false);
     Audio& audio = Audio::getInstance();
-    audio.startLoop();
-    audio.playMono16Sound(QStringLiteral(":/audio/ToxicIncomingCall.pcm"));
+    audio.playMono16Sound(QStringLiteral(":/audio/ToxicIncomingCall.pcm"), true);
 }
 
 void ChatForm::onAvStart(uint32_t FriendId, bool video)
@@ -353,7 +352,7 @@ void ChatForm::onAvEnd(uint32_t FriendId)
     delete callConfirm;
     callConfirm = nullptr;
 
-    Audio::getInstance().stopLoop();
+    Audio::getInstance().stopPlayback();
 
     enableCallButtons();
     stopCounter();
@@ -400,7 +399,7 @@ void ChatForm::onAnswerCallTriggered()
         callConfirm = nullptr;
     }
 
-    Audio::getInstance().stopLoop();
+    Audio::getInstance().stopPlayback();
 
     disableCallButtons();
 
@@ -442,7 +441,7 @@ void ChatForm::onRejectCallTriggered()
         callConfirm = nullptr;
     }
 
-    Audio::getInstance().stopLoop();
+    Audio::getInstance().stopPlayback();
 
     audioInputFlag = false;
     audioOutputFlag = false;

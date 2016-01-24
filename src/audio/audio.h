@@ -78,10 +78,9 @@ public:
     void subscribeInput();
     void unsubscribeInput();
 
-    void startLoop();
-    void stopLoop();
-    void playMono16Sound(const QByteArray& data);
-    void playMono16Sound(const QString& path);
+    void playMono16Sound(const QByteArray& data, bool loop = false);
+    void playMono16Sound(const QString& path, bool loop = false);
+    void stopPlayback();
 
     void playAudioBuffer(ALuint alSource, const int16_t *data, int samples,
                          unsigned channels, int sampleRate);

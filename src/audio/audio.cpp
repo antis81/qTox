@@ -314,19 +314,25 @@ bool Audio::initOutput(QString outDevDescr)
 }
 
 /**
-Play a 44100Hz mono 16bit PCM sound from a file
+Play a 44100Hz mono 16bit PCM sound from a file.
+
+@param[in] path     path to the audio file to be played
+@param[in] loop     loop playback
 */
-void Audio::playMono16Sound(const QString& path)
+void Audio::playMono16Sound(const QString& path, bool loop)
 {
     QFile sndFile(path);
     sndFile.open(QIODevice::ReadOnly);
-    playMono16Sound(QByteArray(sndFile.readAll()));
+    playMono16Sound(QByteArray(sndFile.readAll()), loop);
 }
 
 /**
-Play a 44100Hz mono 16bit PCM sound
+Play a 44100Hz mono 16bit PCM sound from a file.
+
+@param[in] path     path to the audio file to be played
+@param[in] loop     loop playback
 */
-void Audio::playMono16Sound(const QByteArray& data)
+void Audio::playMono16Sound(const QByteArray& data, bool loop)
 {
     QMutexLocker locker(&audioLock);
 
@@ -346,10 +352,25 @@ void Audio::playMono16Sound(const QByteArray& data)
 
     alBufferData(alMainBuffer, AL_FORMAT_MONO16, data.constData(), data.size(), 44100);
     alSourcei(alMainSource, AL_BUFFER, static_cast<ALint>(alMainBuffer));
+    alSourcei(alMainSource, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
     alSourcePlay(alMainSource);
 
     int durationMs = data.size() * 1000 / 2 / 44100;
     playMono16Timer.start(durationMs + 50);
+}
+
+/**
+Stop current playback.
+*/
+void Audio::stopPlayback()
+{
+    QMutexLocker locker(&audioLock);
+
+    if (!alOutDev)
+        return;
+
+    alSourceStop(alMainSource);
+    checkAlError();
 }
 
 /**
@@ -578,19 +599,6 @@ void Audio::unsubscribeOutput(ALuint &sid)
 
     if (outSources.isEmpty())
         cleanupOutput();
-}
-
-void Audio::startLoop()
-{
-    QMutexLocker locker(&audioLock);
-    alSourcei(alMainSource, AL_LOOPING, AL_TRUE);
-}
-
-void Audio::stopLoop()
-{
-    QMutexLocker locker(&audioLock);
-    alSourcei(alMainSource, AL_LOOPING, AL_FALSE);
-    alSourceStop(alMainSource);
 }
 
 #if defined(QTOX_FILTER_AUDIO) && defined(ALC_LOOPBACK_CAPTURE_SAMPLES)
