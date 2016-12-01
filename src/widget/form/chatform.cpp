@@ -87,7 +87,6 @@ ChatForm::ChatForm(Friend* chatFriend)
     statusMessageLabel->setTextFormat(Qt::PlainText);
     statusMessageLabel->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    callConfirm = nullptr;
     offlineEngine = new OfflineMsgEngine(f);
 
     typingTimer.setSingleShot(true);
@@ -315,7 +314,7 @@ void ChatForm::onAvInvite(uint32_t friendId, bool video)
     if (friendId != f->getFriendID())
         return;
 
-    callConfirm = new CallConfirmWidget(video ? videoButton : callButton, *f);
+    CallConfirmWidget* callConfirm = new CallConfirmWidget(video ? videoButton : callButton, *f, widget());
     insertChatMessage(ChatMessage::createChatInfoMessage(tr("%1 calling").arg(f->getDisplayedName()),
                                                          ChatMessage::INFO,
                                                          QDateTime::currentDateTime()));
@@ -326,17 +325,18 @@ void ChatForm::onAvInvite(uint32_t friendId, bool video)
         uint32_t friendId = f->getFriendID();
         qDebug() << "automatic call answer";
         CoreAV* coreav = Core::getInstance()->getAv();
-        QMetaObject::invokeMethod(coreav, "answerCall", Qt::QueuedConnection, Q_ARG(uint32_t, friendId));
-        onAvStart(friendId,video);
+        QMetaObject::invokeMethod(coreav, "answerCall", Qt::QueuedConnection,
+                                  Q_ARG(uint32_t, friendId));
+        onAvStart(friendId, video);
     }
     else
     {
-        callConfirm->show();
-
-        connect(callConfirm.data(), &CallConfirmWidget::accepted,
+        connect(callConfirm, &CallConfirmWidget::accepted,
                 this, &ChatForm::onAnswerCallTriggered);
-        connect(callConfirm.data(), &CallConfirmWidget::rejected,
+        connect(callConfirm, &CallConfirmWidget::rejected,
                 this, &ChatForm::onRejectCallTriggered);
+
+        callConfirm->show();
 
         insertChatMessage(ChatMessage::createChatInfoMessage(
                               tr("%1 calling").arg(f->getDisplayedName()),
@@ -369,7 +369,6 @@ void ChatForm::onAvEnd(uint32_t FriendId)
     if (FriendId != f->getFriendID())
         return;
 
-    delete callConfirm;
 
     //Fixes an OS X bug with ending a call while in full screen
     if (netcam && netcam->isFullScreen())
@@ -406,8 +405,6 @@ void ChatForm::showOutgoingCall(bool video)
 
 void ChatForm::onAnswerCallTriggered()
 {
-    delete callConfirm;
-
     Audio::getInstance().stopLoop();
 
     updateCallButtons();
@@ -426,8 +423,6 @@ void ChatForm::onAnswerCallTriggered()
 
 void ChatForm::onRejectCallTriggered()
 {
-    delete callConfirm;
-
     Audio::getInstance().stopLoop();
 
     CoreAV* av = Core::getInstance()->getAv();
@@ -997,25 +992,6 @@ void ChatForm::setFriendTyping(bool isTyping)
 void ChatForm::show(ContentLayout* contentLayout)
 {
     GenericChatForm::show(contentLayout);
-
-    if (callConfirm)
-        callConfirm->show();
-}
-
-void ChatForm::showEvent(QShowEvent* event)
-{
-    if (callConfirm)
-        callConfirm->show();
-
-    GenericChatForm::showEvent(event);
-}
-
-void ChatForm::hideEvent(QHideEvent* event)
-{
-    if (callConfirm)
-        callConfirm->hide();
-
-    GenericChatForm::hideEvent(event);
 }
 
 OfflineMsgEngine *ChatForm::getOfflineMsgEngine()

@@ -280,14 +280,12 @@ bool CoreAV::cancelCall(uint32_t friendNum)
             return false;
         }
 
-        bool ret;
         QMetaObject::invokeMethod(this, "cancelCall",
-                                  Qt::BlockingQueuedConnection,
-                                  Q_RETURN_ARG(bool, ret),
+                                  Qt::QueuedConnection,
                                   Q_ARG(uint32_t, friendNum));
 
         threadSwitchLock.clear(std::memory_order_release);
-        return ret;
+        return true;
     }
 
     qDebug() << QString("Cancelling call with %1").arg(friendNum);

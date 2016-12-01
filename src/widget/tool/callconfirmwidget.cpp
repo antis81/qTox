@@ -17,19 +17,23 @@
     along with qTox.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "callconfirmwidget.h"
+
+#include "core/core.h"
+#include "core/coreav.h"
 #include "widget/widget.h"
+
 #include <assert.h>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QPushButton>
+
+#include <QBoxLayout>
 #include <QDialogButtonBox>
+#include <QLabel>
+#include <QPolygon>
 #include <QPainter>
 #include <QPaintEvent>
-#include <QRect>
 #include <QPalette>
+#include <QPushButton>
+#include <QRect>
 
 /**
  * @class CallConfirmWidget
@@ -51,12 +55,18 @@
  * @brief Used to correct the rounding factors on non-square rects
  */
 
-CallConfirmWidget::CallConfirmWidget(const QWidget *Anchor, const Friend& f) :
-    QWidget(), anchor(Anchor), f(f),
-    rectW{120}, rectH{85},
-    spikeW{30}, spikeH{15},
-    roundedFactor{20},
-    rectRatio(static_cast<qreal>(rectH)/static_cast<qreal>(rectW))
+CallConfirmWidget::CallConfirmWidget(QWidget *Anchor, quint32 friendId,
+                                     QWidget* parent)
+    : QWidget(parent)
+    , anchor(Anchor)
+    , mFriendId(friendId)
+    , brush(QColor(65,65,65))
+    , rectW{120}
+    , rectH{85}
+    , spikeW{30}
+    , spikeH{15}
+    , roundedFactor{20}
+    , rectRatio(static_cast<qreal>(rectH)/static_cast<qreal>(rectW))
 {
     setWindowFlags(Qt::SubWindow);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -84,8 +94,23 @@ CallConfirmWidget::CallConfirmWidget(const QWidget *Anchor, const Friend& f) :
     buttonBox->addButton(accept, QDialogButtonBox::AcceptRole);
     buttonBox->addButton(reject, QDialogButtonBox::RejectRole);
 
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &CallConfirmWidget::accepted);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &CallConfirmWidget::rejected);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, [this]()
+    {
+        closeHelper();
+        emit accepted();
+    });
+    connect(buttonBox, &QDialogButtonBox::rejected, this, [this]()
+    {
+        closeHelper();
+        emit rejected();
+    });
+
+    const CoreAV* av = Core::getInstance()->getAv();
+    connect(av, &CoreAV::avEnd, this, [this](quint32 friendId)
+    {
+        if (friendId == this->mFriendId)
+            this->deleteLater();
+    });
 
     layout->setMargin(12);
     layout->addSpacing(spikeH);
@@ -93,76 +118,102 @@ CallConfirmWidget::CallConfirmWidget(const QWidget *Anchor, const Friend& f) :
     layout->addWidget(buttonBox);
 
     setFixedSize(rectW,rectH+spikeH);
-    reposition();
+
+    anchor->installEventFilter(this);
+}
+
+void CallConfirmWidget::closeHelper()
+{
+    if (this->testAttribute(Qt::WA_DeleteOnClose))
+    {
+        this->setAttribute(Qt::WA_DeleteOnClose, false);
+        this->deleteLater();
+    }
 }
 
 /**
- * @brief Recalculate our positions to track the anchor
+ * @brief Recalculate our positions to track the anchor.
  */
 void CallConfirmWidget::reposition()
 {
-    if (parentWidget())
-        parentWidget()->removeEventFilter(this);
+    const QWidget* pw = parentWidget();
+    const QSize anchorSize = anchor->size();
+    const QPoint anchorPos = anchor->mapToGlobal(QPoint());
 
-    setParent(anchor->window());
-    parentWidget()->installEventFilter(this);
+    QPoint newPos = pw ? pw->mapFromGlobal(anchorPos) : anchorPos;
+    newPos.rx() -= (width() - anchorSize.width()) / 2;
+    newPos.ry() += anchorSize.height();
 
-    QWidget* w = anchor->window();
-    QPoint pos = anchor->mapToGlobal({(anchor->width()-rectW)/2,anchor->height()})-w->mapToGlobal({0,0});
+    if (pw)
+    {
+        newPos.rx() = qBound(0, newPos.x(), pw->width() - width());
+        newPos.ry() = qBound(0, newPos.y(), pw->height() - height());
+    }
 
-    // We don't want the widget to overflow past the right of the screen
-    int xOverflow=0;
-    if (pos.x() + rectW > w->width())
-        xOverflow = pos.x() + rectW - w->width();
-    pos.rx() -= xOverflow;
+    // store the anchor center coordinates relative to the widget
+    anchorPoint = anchorPos;
+    anchorPoint += QPoint(anchorSize.width(), anchorSize.height()) / 2;
 
-    mainRect = {0,spikeH,rectW,rectH};
-    brush = QBrush(QColor(65,65,65));
-    spikePoly = QPolygon({{(rectW-spikeW)/2+xOverflow,spikeH},
-                          {rectW/2+xOverflow,0},
-                          {(rectW+spikeW)/2+xOverflow,spikeH}});
-
-    move(pos);
-    update();
+    move(newPos);
 }
 
-void CallConfirmWidget::paintEvent(QPaintEvent*)
+void CallConfirmWidget::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setBrush(brush);
     painter.setPen(Qt::NoPen);
 
-    painter.drawRoundRect(mainRect, roundedFactor*rectRatio, roundedFactor);
+    QRect mainRect(0, spikeH, rectW, rectH);
+    painter.drawRoundRect(mainRect, roundedFactor * rectRatio, roundedFactor);
+
+    int anchorX = mapFromGlobal(anchorPoint).x();
+    QPolygon spikePoly({{anchorX - spikeW / 2, spikeH},
+                        {anchorX, 0},
+                        {anchorX + spikeW / 2, spikeH}});
     painter.drawPolygon(spikePoly);
 }
 
-void CallConfirmWidget::showEvent(QShowEvent*)
+void CallConfirmWidget::moveEvent(QMoveEvent* event)
 {
-    // If someone does show() from Widget or lower, the event will reach us
-    // because it's our parent, and we could show up in the wrong form.
-    // So check here if our friend's form is actually the active one.
-    //if (!Widget::getInstance()->isFriendWidgetCurActiveWidget(&f))
+    if (event->pos() != event->oldPos())
     {
-        //QWidget::hide();
-        //return;
-    }
-    reposition();
-    update();
-}
-
-void CallConfirmWidget::hideEvent(QHideEvent *)
-{
-    if (parentWidget())
-        parentWidget()->removeEventFilter(this);
-
-    setParent(nullptr);
-}
-
-bool CallConfirmWidget::eventFilter(QObject*, QEvent* event)
-{
-    if (event->type() == QEvent::Resize)
         reposition();
+    }
 
-    return false;
+    QWidget::moveEvent(event);
+}
+
+void CallConfirmWidget::resizeEvent(QResizeEvent* event)
+{
+    if (event->size() != event->oldSize())
+    {
+        reposition();
+    }
+
+    QWidget::resizeEvent(event);
+}
+
+bool CallConfirmWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    QEvent::Type t = event->type();
+    if (t == QEvent::Move || t == QEvent::Resize)
+    {
+        reposition();
+        return true;
+    }
+
+    if (t == QEvent::Hide)
+    {
+        hide();
+        return true;
+    }
+
+    if (t == QEvent::Show)
+    {
+        show();
+        return true;
+    }
+
+    return QObject::eventFilter(watched, event);
 }

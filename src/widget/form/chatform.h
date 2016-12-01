@@ -32,7 +32,6 @@
 class Friend;
 class FileTransferInstance;
 class QPixmap;
-class CallConfirmWidget;
 class QHideEvent;
 class QMoveEvent;
 class OfflineMsgEngine;
@@ -109,12 +108,10 @@ private:
     void SendMessageStr(QString msg);
 
 protected:
-    GenericNetCamView* createNetcam() final override;
-    void insertChatMessage(ChatMessage::Ptr msg) final override;
-    void dragEnterEvent(QDragEnterEvent* ev) final override;
-    void dropEvent(QDropEvent* ev) final override;
-    void hideEvent(QHideEvent* event) final override;
-    void showEvent(QShowEvent* event) final override;
+    GenericNetCamView* createNetcam() final;
+    void insertChatMessage(ChatMessage::Ptr msg) final;
+    void dragEnterEvent(QDragEnterEvent* ev) final;
+    void dropEvent(QDropEvent* ev) final;
 
 private:
 
@@ -130,7 +127,7 @@ private:
     QAction* copyStatusAction;
 
     QHash<uint, FileTransferInstance*> ftransWidgets;
-    QPointer<CallConfirmWidget> callConfirm;
+
     bool isTyping;
 };
 

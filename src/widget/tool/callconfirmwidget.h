@@ -22,39 +22,34 @@
 #define CALLCONFIRMWIDGET_H
 
 #include <QWidget>
-#include <QRect>
-#include <QPolygon>
 #include <QBrush>
-
-class QPaintEvent;
-class QShowEvent;
-class Friend;
 
 class CallConfirmWidget final : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CallConfirmWidget(const QWidget *Anchor, const Friend& f);
+    explicit CallConfirmWidget(QWidget* Anchor, quint32 friendId,
+                               QWidget* parent);
 
 signals:
     void accepted();
     void rejected();
 
-public slots:
-    void reposition();
-
 protected:
     void paintEvent(QPaintEvent* event) final;
-    void showEvent(QShowEvent* event) final;
-    void hideEvent(QHideEvent* event) final;
-    bool eventFilter(QObject *, QEvent* event) final;
+    void moveEvent(QMoveEvent* event) final;
+    void resizeEvent(QResizeEvent* event) final;
+    bool eventFilter(QObject* watched, QEvent* event) final;
 
 private:
-    const QWidget* anchor;
-    const Friend& f;
+    void closeHelper();
+    void reposition();
 
-    QRect mainRect;
-    QPolygon spikePoly;
+private:
+    QWidget* anchor;
+    QPoint anchorPoint;
+    const quint32 mFriendId;
+
     QBrush brush;
 
     const int rectW, rectH;
