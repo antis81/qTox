@@ -17,26 +17,11 @@
 #    See the COPYING file for more details.
 
 
-QT       += core gui network xml opengl sql svg widgets
+QT       += core network xml opengl sql svg qml quick
 
 TARGET    = qtox
 TEMPLATE  = app
 INCLUDEPATH += src
-FORMS    += \
-    src/loginscreen.ui \
-    src/mainwindow.ui \
-    src/chatlog/content/filetransferwidget.ui \
-    src/widget/form/profileform.ui \
-    src/widget/form/loadhistorydialog.ui \
-    src/widget/form/setpassworddialog.ui \
-    src/widget/form/settings/generalsettings.ui \
-    src/widget/form/settings/userinterfacesettings.ui \
-    src/widget/form/settings/privacysettings.ui \
-    src/widget/form/settings/avform.ui \
-    src/widget/form/settings/advancedsettings.ui \
-    src/widget/form/settings/aboutsettings.ui \
-    src/widget/form/removefrienddialog.ui \
-    src/widget/about/aboutuser.ui
 
 CONFIG   += c++11
 CONFIG   += warn_on exceptions_off rtti_off
@@ -246,7 +231,8 @@ macx {
     LIBPATH += /usr/local/lib
 }
 
-RESOURCES += res.qrc
+RESOURCES += res.qrc \
+    qml/qml.qrc
 
 !contains(SMILEYS, NO) {
     RESOURCES += smileys/emojione.qrc
@@ -263,20 +249,6 @@ HEADERS  += \
     src/ipc.h \
     src/nexus.h \
     src/audio/audio.h \
-    src/chatlog/chatlog.h \
-    src/chatlog/chatline.h \
-    src/chatlog/chatlinecontent.h \
-    src/chatlog/chatlinecontentproxy.h \
-    src/chatlog/content/text.h \
-    src/chatlog/content/spinner.h \
-    src/chatlog/content/filetransferwidget.h \
-    src/chatlog/chatmessage.h \
-    src/chatlog/content/image.h \
-    src/chatlog/customtextdocument.h \
-    src/chatlog/content/notificationicon.h \
-    src/chatlog/content/timestamp.h \
-    src/chatlog/documentcache.h \
-    src/chatlog/pixmapcache.h \
     src/core/core.h \
     src/core/coreav.h \
     src/core/coredefines.h \
@@ -306,75 +278,13 @@ HEADERS  += \
     src/persistence/db/genericddinterface.h \
     src/persistence/db/plaindb.h \
     src/persistence/db/encrypteddb.h \
-    src/video/videosurface.h \
-    src/video/netcamview.h \
     src/video/videoframe.h \
     src/video/videosource.h \
     src/video/cameradevice.h \
     src/video/camerasource.h \
     src/video/corevideosource.h \
     src/video/videomode.h \
-    src/video/genericnetcamview.h \
-    src/video/groupnetcamview.h \
-    src/widget/emoticonswidget.h \
-    src/widget/style.h \
-    src/widget/tool/croppinglabel.h \
-    src/widget/maskablepixmapwidget.h \
-    src/widget/form/settings/aboutform.h \
-    src/widget/form/settings/advancedform.h \
-    src/widget/form/addfriendform.h \
-    src/widget/form/chatform.h \
-    src/widget/form/groupchatform.h \
-    src/widget/form/settingswidget.h \
-    src/widget/form/settings/genericsettings.h \
-    src/widget/form/settings/generalform.h \
-    src/widget/form/settings/privacyform.h \
-    src/widget/form/settings/avform.h \
-    src/widget/form/filesform.h \
-    src/widget/form/profileform.h \
-    src/widget/tool/chattextedit.h \
-    src/widget/tool/friendrequestdialog.h \
-    src/widget/friendwidget.h \
-    src/widget/groupwidget.h \
-    src/widget/widget.h \
-    src/widget/friendlistwidget.h \
-    src/widget/genericchatroomwidget.h \
-    src/widget/form/genericchatform.h \
-    src/widget/tool/adjustingscrollarea.h \
-    src/widget/form/loadhistorydialog.h \
-    src/widget/form/setpassworddialog.h \
-    src/widget/form/tabcompleter.h \
-    src/widget/tool/callconfirmwidget.h \
-    src/widget/systemtrayicon.h \
-    src/widget/qrwidget.h \
-    src/widget/systemtrayicon_private.h \
-    src/widget/loginscreen.h \
-    src/widget/gui.h \
-    src/widget/tool/screenshotgrabber.h \
-    src/widget/tool/screengrabberchooserrectitem.h \
-    src/widget/tool/screengrabberoverlayitem.h \
-    src/widget/tool/toolboxgraphicsitem.h \
-    src/widget/tool/flyoutoverlaywidget.h \
-    src/widget/form/settings/verticalonlyscroller.h \
-    src/widget/translator.h \
-    src/widget/notificationscrollarea.h \
-    src/widget/notificationedgewidget.h \
-    src/widget/circlewidget.h \
-    src/widget/genericchatitemwidget.h \
-    src/widget/friendlistlayout.h \
-    src/widget/genericchatitemlayout.h \
-    src/widget/categorywidget.h \
-    src/widget/contentlayout.h \
-    src/widget/contentdialog.h \
-    src/widget/tool/activatedialog.h \
-    src/widget/tool/micfeedbackwidget.h \
-    src/widget/tool/removefrienddialog.h \
-    src/widget/tool/movablewidget.h \
-    src/widget/about/aboutuser.h \
-    src/widget/form/groupinviteform.h \
-    src/widget/tool/profileimporter.h \
-    src/widget/passwordedit.h \
-    src/widget/form/settings/userinterfaceform.h
+    src/qmlview.h
 
 SOURCES += \
     src/ipc.cpp \
@@ -395,20 +305,6 @@ SOURCES += \
     src/core/recursivesignalblocker.cpp \
     src/core/toxid.cpp \
     src/core/toxcall.cpp \
-    src/chatlog/chatlog.cpp \
-    src/chatlog/chatline.cpp \
-    src/chatlog/chatlinecontent.cpp \
-    src/chatlog/chatlinecontentproxy.cpp \
-    src/chatlog/content/text.cpp \
-    src/chatlog/content/spinner.cpp \
-    src/chatlog/content/filetransferwidget.cpp \
-    src/chatlog/chatmessage.cpp \
-    src/chatlog/content/image.cpp \
-    src/chatlog/customtextdocument.cpp\
-    src/chatlog/content/notificationicon.cpp \
-    src/chatlog/content/timestamp.cpp \
-    src/chatlog/documentcache.cpp \
-    src/chatlog/pixmapcache.cpp \
     src/net/autoupdate.cpp \
     src/net/toxuri.cpp \
     src/net/toxme.cpp \
@@ -432,67 +328,5 @@ SOURCES += \
     src/video/cameradevice.cpp \
     src/video/camerasource.cpp \
     src/video/corevideosource.cpp \
-    src/video/genericnetcamview.cpp \
-    src/video/groupnetcamview.cpp \
-    src/video/netcamview.cpp \
-    src/video/videosurface.cpp \
     src/video/videomode.cpp \
-    src/widget/form/addfriendform.cpp \
-    src/widget/form/settingswidget.cpp \
-    src/widget/form/settings/generalform.cpp \
-    src/widget/form/settings/privacyform.cpp \
-    src/widget/form/settings/avform.cpp \
-    src/widget/form/settings/userinterfaceform.cpp \
-    src/widget/form/settings/genericsettings.cpp \
-    src/widget/form/profileform.cpp \
-    src/widget/form/filesform.cpp \
-    src/widget/tool/chattextedit.cpp \
-    src/widget/tool/friendrequestdialog.cpp \
-    src/widget/widget.cpp \
-    src/widget/friendlistwidget.cpp \
-    src/widget/tool/adjustingscrollarea.cpp \
-    src/widget/form/loadhistorydialog.cpp \
-    src/widget/form/setpassworddialog.cpp \
-    src/widget/form/tabcompleter.cpp \
-    src/widget/flowlayout.cpp \
-    src/widget/tool/callconfirmwidget.cpp \
-    src/widget/systemtrayicon.cpp \
-    src/widget/groupwidget.cpp \
-    src/widget/friendwidget.cpp \
-    src/widget/form/chatform.cpp \
-    src/widget/form/groupchatform.cpp \
-    src/widget/form/genericchatform.cpp \
-    src/widget/emoticonswidget.cpp \
-    src/widget/style.cpp \
-    src/widget/tool/croppinglabel.cpp \
-    src/widget/maskablepixmapwidget.cpp \
-    src/widget/form/settings/aboutform.cpp \
-    src/widget/form/settings/advancedform.cpp \
-    src/widget/qrwidget.cpp \
-    src/widget/genericchatroomwidget.cpp \
-    src/widget/loginscreen.cpp \
-    src/widget/gui.cpp \
-    src/widget/tool/screenshotgrabber.cpp \
-    src/widget/tool/screengrabberchooserrectitem.cpp \
-    src/widget/tool/screengrabberoverlayitem.cpp \
-    src/widget/tool/toolboxgraphicsitem.cpp \
-    src/widget/tool/flyoutoverlaywidget.cpp \
-    src/widget/form/settings/verticalonlyscroller.cpp \
-    src/widget/translator.cpp \
-    src/widget/notificationscrollarea.cpp \
-    src/widget/notificationedgewidget.cpp \
-    src/widget/circlewidget.cpp \
-    src/widget/genericchatitemwidget.cpp \
-    src/widget/friendlistlayout.cpp \
-    src/widget/genericchatitemlayout.cpp \
-    src/widget/categorywidget.cpp \
-    src/widget/contentlayout.cpp \
-    src/widget/contentdialog.cpp \
-    src/widget/tool/activatedialog.cpp \
-    src/widget/tool/movablewidget.cpp \
-    src/widget/tool/micfeedbackwidget.cpp \
-    src/widget/tool/removefrienddialog.cpp \
-    src/widget/about/aboutuser.cpp \
-    src/widget/form/groupinviteform.cpp \
-    src/widget/tool/profileimporter.cpp \
-    src/widget/passwordedit.cpp
+    src/qmlview.cpp

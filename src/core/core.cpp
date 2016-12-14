@@ -24,7 +24,6 @@
 #include "core/cstring.h"
 #include "core/coreav.h"
 #include "persistence/settings.h"
-#include "widget/gui.h"
 #include "persistence/profilelocker.h"
 #include "net/avatarbroadcaster.h"
 #include "persistence/profile.h"
@@ -264,7 +263,6 @@ void Core::start()
     if (!tox)
     {
         ready = true;
-        GUI::setEnabled(true);
         return;
     }
 
@@ -328,9 +326,6 @@ void Core::start()
     {
         profile.saveToxSave();
     }
-
-    if (isReady())
-        GUI::setEnabled(true);
 
     process(); // starts its own timer
     av->start();
@@ -1321,7 +1316,6 @@ void Core::reset()
     deadifyTox();
 
     emit selfAvatarChanged(QPixmap(":/img/contact_dark.svg"));
-    GUI::clearContacts();
 
     start();
 }

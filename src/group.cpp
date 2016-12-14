@@ -18,21 +18,15 @@
 */
 
 #include "group.h"
-#include "widget/groupwidget.h"
-#include "widget/form/groupchatform.h"
 #include "friendlist.h"
 #include "friend.h"
 #include "core/core.h"
-#include "widget/gui.h"
 #include <QDebug>
 #include <QTimer>
 
 Group::Group(int GroupId, QString Name, bool IsAvGroupchat)
     : groupId(GroupId), nPeers{0}, avGroupchat{IsAvGroupchat}
 {
-    widget = new GroupWidget(groupId, Name);
-    chatForm = new GroupChatForm(this);
-
     //in groupchats, we only notify on messages containing your name <-- dumb
     // sound notifications should be on all messages, but system popup notification
     // on naming is appropriate
@@ -42,8 +36,6 @@ Group::Group(int GroupId, QString Name, bool IsAvGroupchat)
 
 Group::~Group()
 {
-    delete chatForm;
-    widget->deleteLater();
 }
 
 void Group::updatePeer(int peerId, QString name)
@@ -61,25 +53,19 @@ void Group::updatePeer(int peerId, QString name)
     }
     else
     {
-        widget->onUserListChanged();
-        chatForm->onUserListChanged();
-        emit userListChanged(getGroupWidget());
+        emit userListChanged(groupId);
     }
 }
 
 void Group::setName(const QString& name)
 {
-    chatForm->setName(name);
-
-    if (widget->isActive())
-        GUI::setWindowTitle(name);
-
-    emit titleChanged(this->getGroupWidget());
+    emit titleChanged(groupId);
 }
 
 QString Group::getName() const
 {
-    return widget->getName();
+    // TODO: the group name has to be returned here!
+    return tr("TODO: GROUPNAME MUST BE SET!");
 }
 
 void Group::regeneratePeerList()
@@ -108,9 +94,7 @@ void Group::regeneratePeerList()
         }
     }
 
-    widget->onUserListChanged();
-    chatForm->onUserListChanged();
-    emit userListChanged(getGroupWidget());
+    emit userListChanged(groupId);
 }
 
 bool Group::isAvGroupchat() const

@@ -22,7 +22,6 @@
 /* was permanently moved here to handle encryption */
 
 #include "core.h"
-#include "widget/gui.h"
 #include "persistence/settings.h"
 #include "core/cstring.h"
 #include "nexus.h"
@@ -135,7 +134,6 @@ void Core::checkEncryptedHistory()
     QByteArray salt = getSaltFromFile(path);
     if (exists && salt.size() == 0)
     {   // maybe we should handle this better
-        GUI::showWarning(tr("Encrypted chat history"), tr("No encrypted chat history file found, or it was corrupted.\nHistory will be disabled!"));
         HistoryKeeper::resetInstance();
         return;
     }
@@ -157,7 +155,8 @@ void Core::checkEncryptedHistory()
     bool error = true;
     do
     {
-        QString pw = GUI::passwordDialog(tr("Disable chat history"), dialogtxt);
+        // TODO:
+        QString pw; // = GUI::passwordDialog(tr("Disable chat history"), dialogtxt);
 
         if (pw.isEmpty())
         {

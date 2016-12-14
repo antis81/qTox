@@ -19,7 +19,6 @@
 
 #include "smileypack.h"
 #include "persistence/settings.h"
-#include "widget/style.h"
 
 #include <QFileInfo>
 #include <QFile>

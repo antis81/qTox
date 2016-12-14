@@ -34,8 +34,6 @@
 #include "historykeeper.h"
 #include "core/core.h"
 #include "nexus.h"
-#include "widget/gui.h"
-#include "widget/widget.h"
 
 /**
  * @class Profile
@@ -507,7 +505,6 @@ void Profile::loadDatabase(const QString& id)
     if(salt.size() != TOX_PASS_SALT_LENGTH)
     {
         qWarning() << "Couldn't compute salt from public key" << name;
-        GUI::showError(QObject::tr("Error"), QObject::tr("qTox couldn't open your chat logs, they will be disabled."));
     }
     // At this point it's too early to load the personal settings (Nexus will do it), so we always load
     // the history, and if it fails we can't change the setting now, but we keep a nullptr
@@ -519,7 +516,6 @@ void Profile::loadDatabase(const QString& id)
     else
     {
         qWarning() << "Failed to open database for profile" << name;
-        GUI::showError(QObject::tr("Error"), QObject::tr("qTox couldn't open your chat logs, they will be disabled."));
     }
 }
 
@@ -774,7 +770,6 @@ const TOX_PASS_KEY& Profile::getPasskey() const
  */
 void Profile::restartCore()
 {
-    GUI::setEnabled(false); // Core::reset re-enables it
     if (!isRemoved && core->isReady())
     {
         saveToxSave();
@@ -800,7 +795,6 @@ void Profile::setPassword(const QString& newPassword)
         database->setPassword(newPassword);
     }
 
-    Nexus::getDesktopGUI()->reloadHistory();
     saveAvatar(avatar, core->getSelfId().publicKey);
 
     QVector<uint32_t> friendList = core->getFriendList();

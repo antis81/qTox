@@ -22,11 +22,9 @@
 #include "persistence/profile.h"
 #include "core/core.h"
 #include "core/coreav.h"
-#include "widget/widget.h"
+#include "qmlview.h"
 #include "persistence/settings.h"
 #include "video/camerasource.h"
-#include "widget/gui.h"
-#include "widget/loginscreen.h"
 #include <QThread>
 #include <QDebug>
 #include <QImageReader>
@@ -156,64 +154,18 @@ void Nexus::showLogin()
     delete profile;
     profile = nullptr;
 
-    loginScreen->reset();
-    loginScreen->move(QApplication::desktop()->screen()->rect().center() - loginScreen->rect().center());
     loginScreen->show();
-    ((QApplication*)qApp)->setQuitOnLastWindowClosed(true);
+    qApp->setQuitOnLastWindowClosed(true);
 }
 
 void Nexus::showMainGUI()
 {
     assert(profile);
 
-    ((QApplication*)qApp)->setQuitOnLastWindowClosed(false);
-    loginScreen->close();
+    qApp->setQuitOnLastWindowClosed(false);
 
-    // Create GUI
-    widget = Widget::getInstance();
-
-    // Start GUI
-    widget->init();
-    GUI::getInstance();
-
-    // Zetok protection
-    // There are small instants on startup during which no
-    // profile is loaded but the GUI could still receive events,
-    // e.g. between two modal windows. Disable the GUI to prevent that.
-    GUI::setEnabled(false);
-
-    // Connections
-    Core* core = profile->getCore();
-    connect(core, &Core::connected,                  widget, &Widget::onConnected);
-    connect(core, &Core::disconnected,               widget, &Widget::onDisconnected);
-    connect(core, &Core::failedToStart,              widget, &Widget::onFailedToStartCore, Qt::BlockingQueuedConnection);
-    connect(core, &Core::badProxy,                   widget, &Widget::onBadProxyCore, Qt::BlockingQueuedConnection);
-    connect(core, &Core::statusSet,                  widget, &Widget::onStatusSet);
-    connect(core, &Core::usernameSet,                widget, &Widget::setUsername);
-    connect(core, &Core::statusMessageSet,           widget, &Widget::setStatusMessage);
-    connect(core, &Core::selfAvatarChanged,          widget, &Widget::onSelfAvatarLoaded);
-    connect(core, &Core::friendAdded,                widget, &Widget::addFriend);
-    connect(core, &Core::friendshipChanged,          widget, &Widget::onFriendshipChanged);
-    connect(core, &Core::failedToAddFriend,          widget, &Widget::addFriendFailed);
-    connect(core, &Core::friendUsernameChanged,      widget, &Widget::onFriendUsernameChanged);
-    connect(core, &Core::friendStatusChanged,        widget, &Widget::onFriendStatusChanged);
-    connect(core, &Core::friendStatusMessageChanged, widget, &Widget::onFriendStatusMessageChanged);
-    connect(core, &Core::friendRequestReceived,      widget, &Widget::onFriendRequestReceived);
-    connect(core, &Core::friendMessageReceived,      widget, &Widget::onFriendMessageReceived);
-    connect(core, &Core::receiptRecieved,            widget, &Widget::onReceiptRecieved);
-    connect(core, &Core::groupInviteReceived,        widget, &Widget::onGroupInviteReceived);
-    connect(core, &Core::groupMessageReceived,       widget, &Widget::onGroupMessageReceived);
-    connect(core, &Core::groupNamelistChanged,       widget, &Widget::onGroupNamelistChanged);
-    connect(core, &Core::groupTitleChanged,          widget, &Widget::onGroupTitleChanged);
-    connect(core, &Core::groupPeerAudioPlaying,      widget, &Widget::onGroupPeerAudioPlaying);
-    connect(core, &Core::emptyGroupCreated,          widget, &Widget::onEmptyGroupCreated);
-    connect(core, &Core::friendTypingChanged,        widget, &Widget::onFriendTypingChanged);
-    connect(core, &Core::messageSentResult,          widget, &Widget::onMessageSendResult);
-    connect(core, &Core::groupSentResult,            widget, &Widget::onGroupSendResult);
-
-    connect(widget, &Widget::statusSet,             core, &Core::setStatus);
-    connect(widget, &Widget::friendRequested,       core, &Core::requestFriendship);
-    connect(widget, &Widget::friendRequestAccepted, core, &Core::acceptFriendRequest);
+    widget = new Widget;
+    widget->show();
 
     profile->startCore();
 }
@@ -304,7 +256,6 @@ bool Nexus::tryRemoveFile(const QString& filepath)
  */
 void Nexus::showLoginLater()
 {
-    GUI::setEnabled(false);
     QMetaObject::invokeMethod(&getInstance(), "showLogin", Qt::QueuedConnection);
 }
 

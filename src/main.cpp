@@ -17,7 +17,6 @@
     along with qTox.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "widget/widget.h"
 #include "persistence/settings.h"
 #include "nexus.h"
 #include "ipc.h"
@@ -25,10 +24,8 @@
 #include "net/autoupdate.h"
 #include "persistence/toxsave.h"
 #include "persistence/profile.h"
-#include "widget/loginscreen.h"
-#include "widget/translator.h"
 #include "video/camerasource.h"
-#include <QApplication>
+#include <QGuiApplication>
 #include <QCommandLineParser>
 #include <QDateTime>
 #include <QDebug>
@@ -134,7 +131,7 @@ int main(int argc, char *argv[])
 
     qInstallMessageHandler(logMessageHandler);
 
-    QApplication a(argc, argv);
+    QGuiApplication a(argc, argv);
     a.setApplicationName("qTox");
     a.setOrganizationName("Tox");
     a.setApplicationVersion("\nGit commit: " + QString(GIT_VERSION));
@@ -147,7 +144,7 @@ int main(int argc, char *argv[])
 
     qsrand(time(0));
     Settings::getInstance();
-    Translator::translate();
+//    Translator::translate();
 
     // Process arguments
     QCommandLineParser parser;
@@ -225,7 +222,7 @@ int main(int argc, char *argv[])
     // Inter-process communication
     ipc.registerEventHandler("uri", &toxURIEventHandler);
     ipc.registerEventHandler("save", &toxSaveEventHandler);
-    ipc.registerEventHandler("activate", &toxActivateEventHandler);
+//    ipc.registerEventHandler("activate", &toxActivateEventHandler);
 
     uint32_t ipcDest = 0;
     QString eventType, firstParam;

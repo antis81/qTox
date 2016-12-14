@@ -62,19 +62,10 @@ void OfflineMsgEngine::dischargeReceipt(int receipt)
         {
             if (profile->isHistoryEnabled())
                 profile->getHistory()->markAsSent(mID);
-            msgIt.value().msg->markAsSent(QDateTime::currentDateTime());
             undeliveredMsgs.erase(msgIt);
         }
         receipts.erase(it);
     }
-}
-
-void OfflineMsgEngine::registerReceipt(int receipt, int64_t messageID, ChatMessage::Ptr msg, const QDateTime &timestamp)
-{
-    QMutexLocker ml(&mutex);
-
-    receipts[receipt] = messageID;
-    undeliveredMsgs[messageID] = {msg, timestamp, receipt};
 }
 
 void OfflineMsgEngine::deliverOfflineMsgs()
@@ -101,17 +92,8 @@ void OfflineMsgEngine::deliverOfflineMsgs()
 
         if (val.timestamp.msecsTo(QDateTime::currentDateTime()) < offlineTimeout)
         {
-            registerReceipt(val.receipt, key, val.msg, val.timestamp);
             continue;
         }
-        QString messageText = val.msg->toString();
-        int rec;
-        if (val.msg->isAction())
-            rec = Core::getInstance()->sendAction(f->getFriendID(), messageText);
-        else
-            rec = Core::getInstance()->sendMessage(f->getFriendID(), messageText);
-
-        registerReceipt(rec, key, val.msg);
     }
 }
 

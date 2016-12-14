@@ -23,8 +23,6 @@
 #include "persistence/db/plaindb.h"
 #include "core/corestructs.h"
 #include "core/core.h"
-#include "widget/gui.h"
-#include "widget/style.h"
 #include "persistence/profilelocker.h"
 #include "persistence/settingsserializer.h"
 #include "nexus.h"
@@ -272,7 +270,7 @@ void Settings::loadGlobal()
 
     s.beginGroup("Chat");
     {
-        chatMessageFont = s.value("chatMessageFont", Style::getFont(Style::Big)).value<QFont>();
+        chatMessageFont = s.value("chatMessageFont").value<QFont>();
     }
     s.endGroup();
 

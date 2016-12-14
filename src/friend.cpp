@@ -20,9 +20,6 @@
 
 #include "friend.h"
 #include "friendlist.h"
-#include "widget/friendwidget.h"
-#include "widget/form/chatform.h"
-#include "widget/gui.h"
 #include "core/core.h"
 #include "persistence/settings.h"
 #include "persistence/profile.h"
@@ -40,14 +37,10 @@ Friend::Friend(uint32_t FriendId, const ToxId &UserId)
         userName = UserId.publicKey;
 
     userAlias = Settings::getInstance().getFriendAlias(UserId);
-
-    chatForm = new ChatForm(this);
 }
 
 Friend::~Friend()
 {
-    delete chatForm;
-    delete widget;
 }
 
 /**
@@ -57,8 +50,6 @@ void Friend::loadHistory()
 {
     if (Nexus::getProfile()->isHistoryEnabled())
     {
-        chatForm->loadHistory(QDateTime::currentDateTime().addDays(-7), true);
-        widget->historyLoaded = true;
     }
 }
 
@@ -70,13 +61,7 @@ void Friend::setName(QString name)
     userName = name;
     if (userAlias.size() == 0)
     {
-        widget->setName(name);
-        chatForm->setName(name);
-
-        if (widget->isActive())
-            GUI::setWindowTitle(name);
-
-        emit displayedNameChanged(getFriendWidget(), getStatus(), hasNewEvents);
+        emit displayedNameChanged(friendId, getStatus(), hasNewEvents);
     }
 }
 
@@ -85,13 +70,7 @@ void Friend::setAlias(QString name)
     userAlias = name;
     QString dispName = userAlias.size() == 0 ? userName : userAlias;
 
-    widget->setName(dispName);
-    chatForm->setName(dispName);
-
-    if (widget->isActive())
-            GUI::setWindowTitle(dispName);
-
-    emit displayedNameChanged(getFriendWidget(), getStatus(), hasNewEvents);
+    emit displayedNameChanged(friendId, getStatus(), hasNewEvents);
 
     for (Group *g : GroupList::getAllGroups())
     {
@@ -102,8 +81,6 @@ void Friend::setAlias(QString name)
 void Friend::setStatusMessage(QString message)
 {
     statusMessage = message;
-    widget->setStatusMsg(message);
-    chatForm->setStatusMessage(message);
 }
 
 QString Friend::getStatusMessage()
@@ -152,24 +129,4 @@ void Friend::setStatus(Status s)
 Status Friend::getStatus() const
 {
     return friendStatus;
-}
-
-void Friend::setFriendWidget(FriendWidget *widget)
-{
-    this->widget = widget;
-}
-
-ChatForm *Friend::getChatForm()
-{
-    return chatForm;
-}
-
-FriendWidget *Friend::getFriendWidget()
-{
-    return widget;
-}
-
-const FriendWidget *Friend::getFriendWidget() const
-{
-    return widget;
 }

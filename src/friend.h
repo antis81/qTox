@@ -25,9 +25,6 @@
 #include "core/corestructs.h"
 #include "core/toxid.h"
 
-class FriendWidget;
-class ChatForm;
-
 class Friend : public QObject
 {
     Q_OBJECT
@@ -56,14 +53,8 @@ public:
     void setStatus(Status s);
     Status getStatus() const;
 
-    ChatForm *getChatForm();
-
-    void setFriendWidget(FriendWidget* widget);
-    FriendWidget *getFriendWidget();
-    const FriendWidget *getFriendWidget() const;
-
 signals:
-    void displayedNameChanged(FriendWidget* widget, Status s, int hasNewEvents);
+    void displayedNameChanged(uint32_t friendId, Status s, int hasNewEvents);
 
 private:
     QString userAlias, userName, statusMessage;
@@ -71,9 +62,6 @@ private:
     uint32_t friendId;
     int hasNewEvents;
     Status friendStatus;
-
-    FriendWidget* widget;
-    ChatForm* chatForm;
 };
 
 #endif // FRIEND_H

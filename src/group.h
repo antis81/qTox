@@ -61,8 +61,8 @@ public:
     QString resolveToxId(const ToxId &id) const;
 
 signals:
-    void titleChanged(GroupWidget* widget);
-    void userListChanged(GroupWidget* widget);
+    void titleChanged(int widget);
+    void userListChanged(uint32_t widget);
 
 private:
     GroupWidget* widget;

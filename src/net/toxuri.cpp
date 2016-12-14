@@ -20,7 +20,6 @@
 
 #include "net/toxuri.h"
 #include "net/toxme.h"
-#include "widget/tool/friendrequestdialog.h"
 #include "nexus.h"
 #include "core/core.h"
 #include <QByteArray>
@@ -100,9 +99,6 @@ ToxURIDialog::ToxURIDialog(QWidget *parent, const QString &userId, const QString
 
     buttonBox->addButton(tr("Send", "Send a friend request"), QDialogButtonBox::AcceptRole);
     buttonBox->addButton(tr("Cancel", "Don't send a friend request"), QDialogButtonBox::RejectRole);
-
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &FriendRequestDialog::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &FriendRequestDialog::reject);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 

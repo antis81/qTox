@@ -20,8 +20,6 @@
 #include "net/autoupdate.h"
 #include "persistence/serialize.h"
 #include "persistence/settings.h"
-#include "widget/widget.h"
-#include "widget/gui.h"
 #include "nexus.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -674,14 +672,6 @@ void AutoUpdater::checkUpdatesAsyncInteractiveWorker()
 
     if (abortFlag)
         return;
-
-    if (GUI::askQuestion(QObject::tr("Update", "The title of a message box"),
-                              contentText, true, false))
-    {
-        setProgressVersion(newVersion.versionString);
-        GUI::showUpdateDownloadProgress();
-        downloadUpdate();
-    }
 }
 
 /**
